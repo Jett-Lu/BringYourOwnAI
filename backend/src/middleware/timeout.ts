@@ -1,0 +1,21 @@
+import type { NextFunction, Request, Response } from 'express';
+import { getConfig } from '../config/env.js';
+
+const config = getConfig();
+
+export const requestTimeoutMiddleware = (req: Request, res: Response, next: NextFunction): void => {
+  req.setTimeout(config.REQUEST_TIMEOUT_MS);
+  res.setTimeout(config.REQUEST_TIMEOUT_MS, () => {
+    if (!res.headersSent) {
+      res.status(408).json({
+        error: {
+          code: 'REQUEST_TIMEOUT',
+          message: 'Request timed out. Please retry.'
+        },
+        requestId: req.requestId
+      });
+    }
+  });
+
+  next();
+};
