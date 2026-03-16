@@ -1,6 +1,6 @@
 # BringYourOwnAI
 
-BringYourOwnAI is a portfolio-ready, security-first full-stack chatbot where users bring their own model API key at runtime. Keys are processed in-memory only and are never persisted.
+BringYourOwnAI is a security-first full-stack chatbot where users bring their own model API key at runtime. Keys are processed in-memory only and are never persisted.
 
 ## Why this project exists
 Most chatbot demos optimize convenience over safety. This project takes the opposite approach:
@@ -8,8 +8,6 @@ Most chatbot demos optimize convenience over safety. This project takes the oppo
 - default-deny validation,
 - sanitized operational logging,
 - production-minded security controls.
-
----
 
 ## Architecture (short)
 ### Frontend (`frontend/`)
@@ -29,8 +27,6 @@ Most chatbot demos optimize convenience over safety. This project takes the oppo
 2. Frontend posts `{ apiKey, messages }` to `POST /api/chat`.
 3. Backend validates payload, applies limits/middleware, and forwards to upstream provider.
 4. Backend returns structured JSON response to frontend.
-
----
 
 ## Threat model (short)
 ### 1) Secret persistence risk
@@ -53,8 +49,6 @@ Most chatbot demos optimize convenience over safety. This project takes the oppo
 **Threat:** permissive production config.  
 **Mitigation:** startup validation with production hard-fails for insecure settings.
 
----
-
 ## Security controls implemented
 - `helmet` security headers.
 - `x-powered-by` disabled.
@@ -67,8 +61,6 @@ Most chatbot demos optimize convenience over safety. This project takes the oppo
 - Structured logging with secret redaction and masked IPs.
 - `.env` excluded from git and `.env.example` provided.
 
----
-
 ## Validation and limit rules
 - API key: trimmed, 12–256 chars, regex `^[A-Za-z0-9._\-]+$`.
 - `messages`: min 1, max `MAX_MESSAGES` (default 40).
@@ -78,8 +70,6 @@ Most chatbot demos optimize convenience over safety. This project takes the oppo
 - Last message must be from `user`.
 - Max user turns: `MAX_TURNS` (default 20).
 - Latest prompt max chars: `MAX_PROMPT_CHARS` (default 2000).
-
----
 
 ## Project structure
 ```text
@@ -108,8 +98,6 @@ Most chatbot demos optimize convenience over safety. This project takes the oppo
   .gitignore
   README.md
 ```
-
----
 
 ## Quick start (local)
 ### Prerequisites
@@ -140,8 +128,6 @@ Default URLs:
 - Frontend: `http://localhost:5173`
 - Backend: `http://localhost:4000`
 
----
-
 ## Environment variables
 See `.env.example` for full values.
 
@@ -153,8 +139,6 @@ Key variables:
 - `MAX_PROMPT_CHARS`, `MAX_MESSAGE_CHARS`, `MAX_TURNS`, `MAX_MESSAGES`
 - `RATE_LIMIT_WINDOW_MS`, `RATE_LIMIT_MAX`
 - `UPSTREAM_API_URL`, `UPSTREAM_MODEL`
-
----
 
 ## Known limitations
 - Rate limiter is in-memory per process (not distributed).
