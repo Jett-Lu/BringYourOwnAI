@@ -4,8 +4,10 @@ import { AppError } from '../types/errors.js';
 
 const config = getConfig();
 
-export const corsPolicyMiddleware = cors({
-  origin: (origin, callback) => {
+const originPolicy = (
+  origin: string | undefined,
+  callback: (err: Error | null, allow?: boolean) => void
+): void => {
     if (config.NODE_ENV === 'production' && !origin) {
       callback(new AppError('Origin header is required.', 403, 'validation_error'));
       return;
@@ -22,7 +24,10 @@ export const corsPolicyMiddleware = cors({
     }
 
     callback(new AppError('Origin is not allowed.', 403, 'validation_error'));
-  },
+};
+
+export const corsPolicyMiddleware = cors({
+  origin: originPolicy,
   methods: ['GET', 'POST'],
   credentials: false
 });

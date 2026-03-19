@@ -8,7 +8,7 @@ export const chatRouter = Router();
 chatRouter.post('/', validateRequest(chatSchema), async (req, res, next) => {
   try {
     const payload = req.body;
-    const result = await requestChatCompletion(payload.apiKey, payload.messages);
+    const result = await requestChatCompletion(payload.apiKey, payload.messages, req.requestSignal);
 
     res.status(200).json({
       reply: result.reply,
@@ -20,6 +20,10 @@ chatRouter.post('/', validateRequest(chatSchema), async (req, res, next) => {
       requestId: req.requestId
     });
   } catch (error) {
+    if (req.requestSignal.aborted && !res.headersSent) {
+      return;
+    }
+
     next(error);
   }
 });

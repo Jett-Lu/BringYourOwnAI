@@ -6,6 +6,8 @@ const config = getConfig();
 export const requestTimeoutMiddleware = (req: Request, res: Response, next: NextFunction): void => {
   req.setTimeout(config.REQUEST_TIMEOUT_MS);
   res.setTimeout(config.REQUEST_TIMEOUT_MS, () => {
+    req.requestAbortController.abort('request_timeout');
+
     if (!res.headersSent) {
       res.status(408).json({
         error: {
@@ -14,6 +16,16 @@ export const requestTimeoutMiddleware = (req: Request, res: Response, next: Next
         },
         requestId: req.requestId
       });
+    }
+  });
+
+  req.on('aborted', () => {
+    req.requestAbortController.abort('client_aborted');
+  });
+
+  res.on('close', () => {
+    if (!res.writableEnded) {
+      req.requestAbortController.abort('client_closed');
     }
   });
 

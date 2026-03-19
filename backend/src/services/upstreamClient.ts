@@ -23,10 +23,20 @@ const config = getConfig();
 
 export const requestChatCompletion = async (
   apiKey: string,
-  messages: ChatMessage[]
+  messages: ChatMessage[],
+  requestSignal?: AbortSignal
 ): Promise<{ reply: string; usage?: UpstreamUsage }> => {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), config.UPSTREAM_TIMEOUT_MS);
+  const timeout = setTimeout(() => controller.abort('upstream_timeout'), config.UPSTREAM_TIMEOUT_MS);
+  const forwardAbort = () => controller.abort(requestSignal?.reason ?? 'request_aborted');
+
+  if (requestSignal) {
+    if (requestSignal.aborted) {
+      controller.abort(requestSignal.reason ?? 'request_aborted');
+    } else {
+      requestSignal.addEventListener('abort', forwardAbort, { once: true });
+    }
+  }
 
   try {
     const response = await fetch(config.UPSTREAM_API_URL, {
@@ -70,11 +80,16 @@ export const requestChatCompletion = async (
     }
 
     if (error instanceof Error && error.name === 'AbortError') {
+      if (requestSignal?.aborted && requestSignal.reason !== 'request_timeout') {
+        throw new AppError('Request was cancelled.', 499, 'timeout_error', false);
+      }
+
       throw new AppError('Upstream request timed out.', 504, 'timeout_error');
     }
 
     throw new AppError('Unable to reach upstream service.', 502, 'upstream_error');
   } finally {
     clearTimeout(timeout);
+    requestSignal?.removeEventListener('abort', forwardAbort);
   }
 };

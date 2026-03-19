@@ -26,4 +26,14 @@ app.use(requestLoggerMiddleware);
 app.use('/api', apiRateLimit);
 registerRoutes(app);
 
+app.use('/api', (req, res) => {
+  res.status(404).json({
+    error: {
+      code: 'NOT_FOUND',
+      message: `Route not found: ${req.method} ${req.originalUrl}`
+    },
+    requestId: req.requestId
+  });
+});
+
 app.use(errorHandler);
