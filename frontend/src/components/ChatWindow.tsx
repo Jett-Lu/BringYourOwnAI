@@ -6,19 +6,32 @@ interface ChatWindowProps {
 }
 
 export const ChatWindow = ({ messages, isLoading }: ChatWindowProps) => {
+  const hasConversation = messages.length > 0 || isLoading;
+
   return (
-    <section className="panel chat-window">
-      <h2>Conversation</h2>
-      <div className="messages" aria-live="polite">
-        {messages.length === 0 ? <p className="muted">Start a conversation by sending your first prompt.</p> : null}
-        {messages.map((message, index) => (
-          <article key={`${message.role}-${index}`} className={`bubble ${message.role}`}>
-            <strong>{message.role === 'user' ? 'You' : 'Assistant'}</strong>
-            <p>{message.content}</p>
-          </article>
-        ))}
-        {isLoading ? <p className="muted">Assistant is thinking…</p> : null}
-      </div>
-    </section>
+    <div className="chat-window" aria-live="polite">
+      {!hasConversation ? (
+        <div className="chat-empty-state">
+          <div>
+            <strong>No conversation yet</strong>
+            <p>Add your API key, send a prompt, and the assistant response will appear here.</p>
+          </div>
+        </div>
+      ) : null}
+
+      {messages.map((message, index) => (
+        <article key={`${message.role}-${index}`} className={`message-card ${message.role}`}>
+          <div className="message-role">{message.role === 'user' ? 'You' : 'Assistant'}</div>
+          <div className="message-content">{message.content}</div>
+        </article>
+      ))}
+
+      {isLoading ? (
+        <article className="message-card assistant">
+          <div className="message-role">Assistant</div>
+          <div className="chat-status">Thinking...</div>
+        </article>
+      ) : null}
+    </div>
   );
 };

@@ -20,26 +20,35 @@ export const Composer = ({
   const remaining = maxPromptChars - input.length;
 
   return (
-    <section className="panel">
-      <h2>Prompt</h2>
-      <textarea
-        value={input}
-        onChange={(event) => onInputChange(event.target.value)}
-        rows={5}
-        placeholder="Ask the model something..."
-        maxLength={maxPromptChars}
-      />
-      <div className="row">
-        <span className={`muted ${remaining < 120 ? 'warning' : ''}`}>{remaining} chars remaining</span>
-        <div className="actions">
-          <button type="button" className="secondary" onClick={onClearConversation}>
+    <form
+      className="composer-form"
+      onSubmit={(event) => {
+        event.preventDefault();
+        onSend();
+      }}
+    >
+      <label>
+        <span className="field-label">Message</span>
+        <textarea
+          value={input}
+          onChange={(event) => onInputChange(event.target.value)}
+          rows={5}
+          placeholder="Ask anything"
+          maxLength={maxPromptChars}
+          className="chat-textarea"
+        />
+      </label>
+      <div className="composer-actions">
+        <span className={`credential-meta ${remaining < 120 ? 'warning' : ''}`}>{remaining} characters remaining</span>
+        <div className="action-group">
+          <button type="button" className="button secondary" onClick={onClearConversation}>
             Clear Conversation
           </button>
-          <button type="button" onClick={onSend} disabled={!canSend}>
-            {isLoading ? 'Sending…' : 'Send'}
+          <button type="submit" className="button primary" disabled={!canSend}>
+            {isLoading ? 'Sending...' : 'Send'}
           </button>
         </div>
       </div>
-    </section>
+    </form>
   );
 };
